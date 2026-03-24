@@ -1,6 +1,6 @@
-# Discord Bot Backend and Deployment Guide
+# kotoba-flow Backend and Deployment Guide
 
-This guide summarizes how to configure the Discord side, run the bot locally, and deploy it to the cloud.
+This guide summarizes how to configure kotoba-flow on the Discord side, run the bot locally, and deploy it to the cloud.
 
 ## Scope
 
