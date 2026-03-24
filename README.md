@@ -49,6 +49,31 @@ python parser/normalize.py --input data/raw/exports/your_export.json --output da
 python parser/build_notebooklm_files.py --input data/normalized/normalized_entries.json --output-dir data/notebooklm
 ```
 
+## Input Format Tip
+
+The parser works better when your Discord notes follow a consistent format.
+
+Recommended:
+
+- add `文法：` for grammar notes
+- add `意思：` for meanings when possible
+- add `例文：` for example sentences
+- vocabulary notes can stay more natural, but consistent formatting improves accuracy
+
+Example:
+
+```text
+文法：〜ようにする
+意思：盡量做到...
+例文：毎日日本語を勉強するようにしている。
+```
+
+```text
+咄嗟（とっさ）
+ごく短い時間
+例文：動揺から咄嗟の間に立ちなおっていた
+```
+
 ## Simple Workflow
 
 1. Create a bot in Discord Developer Portal.
