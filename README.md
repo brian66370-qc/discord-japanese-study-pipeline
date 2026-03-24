@@ -201,6 +201,17 @@ docs/
 - `data/notebooklm/`
   Markdown files ready for NotebookLM
 
+## Example Files
+
+Safe example outputs are included in `examples/`:
+
+- `examples/sample_export.json`
+- `examples/sample_normalized_entries.json`
+- `examples/sample_notebooklm_vocab.md`
+- `examples/sample_notebooklm_grammar.md`
+
+These are small demonstration files for GitHub readers and do not contain your private Discord data.
+
 ## Roadmap
 
 - Improve grammar detection and extraction quality

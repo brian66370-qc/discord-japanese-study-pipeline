@@ -1,0 +1,46 @@
+{
+  "guild_id": "123456789012345678",
+  "guild_name": "Japanese Study Server",
+  "channel_id": "234567890123456789",
+  "channel_name": "jp-vocab",
+  "exported_at": "2026-03-24T12:00:00+00:00",
+  "exported_by": "345678901234567890",
+  "export_mode": "incremental",
+  "checkpoint_after_message_id": "234567890123456700",
+  "message_count": 3,
+  "messages": [
+    {
+      "id": "234567890123456701",
+      "author_id": "345678901234567890",
+      "author_name": "brian",
+      "content": "億劫(おっくう)\n物事をするのに気が進まず、面倒くさい気持であること。",
+      "created_at": "2026-03-24T11:55:00+00:00",
+      "edited_at": null,
+      "attachments": [],
+      "embeds": [],
+      "jump_url": "https://discord.com/channels/123456789012345678/234567890123456789/234567890123456701"
+    },
+    {
+      "id": "234567890123456702",
+      "author_id": "345678901234567890",
+      "author_name": "brian",
+      "content": "咄嗟（とっさ）\nごく短い時間\n例文：動揺から咄嗟の間に立ちなおっていた",
+      "created_at": "2026-03-24T11:56:00+00:00",
+      "edited_at": null,
+      "attachments": [],
+      "embeds": [],
+      "jump_url": "https://discord.com/channels/123456789012345678/234567890123456789/234567890123456702"
+    },
+    {
+      "id": "234567890123456703",
+      "author_id": "345678901234567890",
+      "author_name": "brian",
+      "content": "文法：〜ようにする\n意味：盡量做到... / 養成做...的習慣\n例文：毎日日本語を勉強するようにしている。",
+      "created_at": "2026-03-24T11:57:00+00:00",
+      "edited_at": null,
+      "attachments": [],
+      "embeds": [],
+      "jump_url": "https://discord.com/channels/123456789012345678/234567890123456789/234567890123456703"
+    }
+  ]
+}
