@@ -11,19 +11,21 @@ This project helps you export Japanese vocabulary and grammar notes from Discord
 
 ## Screenshots
 
-Add screenshots here after you capture your setup:
+### Discord export command
 
-- `docs/images/discord-export-command.png`
-- `docs/images/normalized-json-preview.png`
-- `docs/images/notebooklm-files.png`
+![Discord export command](docs/images/discord_export_command.png)
 
-Example Markdown:
+### Bot response
 
-```md
-![Discord export command](docs/images/discord-export-command.png)
-![Normalized JSON preview](docs/images/normalized-json-preview.png)
-![NotebookLM files](docs/images/notebooklm-files.png)
-```
+![Bot response](docs/images/discord_export_result.png)
+
+### Raw JSON export
+
+![Raw JSON export](docs/images/raw_export_json.png)
+
+### NotebookLM-ready files
+
+![NotebookLM-ready files](docs/images/notebooklm_files.png)
 
 ## Quick Start
 
