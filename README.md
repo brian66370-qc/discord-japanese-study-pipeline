@@ -47,6 +47,20 @@ python parser/normalize.py --input data/raw/exports/your_export.json --output da
 python parser/build_notebooklm_files.py --input data/normalized/normalized_entries.json --output-dir data/notebooklm
 ```
 
+## Simple Workflow
+
+1. Create a bot in Discord Developer Portal.
+2. Enable the required bot settings, especially `Message Content Intent`.
+3. Invite the bot to your server with the correct OAuth2 scopes and permissions.
+4. Put the bot token and Discord IDs into your local `.env`.
+5. Start the bot from your terminal.
+6. Run `/export_here` in the target Discord channel.
+7. Export the messages into a JSON file, then process them with the parser.
+
+Full implementation guide:
+
+- [docs/backend_deployment_guide.md](docs/backend_deployment_guide.md)
+
 ## English
 
 ### Overview
@@ -91,6 +105,16 @@ This project helps you:
 - Developer Portal:
   - enable `Message Content Intent`
 
+### Basic Workflow
+
+1. Create a bot in Discord Developer Portal.
+2. Enable the required intents and bot settings.
+3. Invite the bot to your server.
+4. Add the bot token and Discord IDs to `.env`.
+5. Start the bot locally from your terminal.
+6. Run `/export_here` in the target channel.
+7. Save the export as JSON and continue with normalization.
+
 ## 中文
 
 ### 專案用途
@@ -104,6 +128,16 @@ This project helps you:
 - 把原始訊息轉成結構化學習條目
 - 產生適合餵給 NotebookLM 的 Markdown
 - 為之後的複習軟體或單字卡做準備
+
+### 簡單流程
+
+1. 在 Discord Developer Portal 建立 bot
+2. 開啟需要的設定，尤其是 `Message Content Intent`
+3. 用正確的 OAuth2 scope 和權限把 bot 邀請進 server
+4. 把 bot token 和 Discord 相關 ID 填進本機 `.env`
+5. 在終端機啟動 bot
+6. 回到指定頻道執行 `/export_here`
+7. 匯出成 JSON 後再交給 parser 處理
 
 ### 主要功能
 
