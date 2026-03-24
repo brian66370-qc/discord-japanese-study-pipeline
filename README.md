@@ -1,6 +1,44 @@
 # Discord Japanese Study Pipeline
 
-Discord channel export bot and study-note pipeline for Japanese vocabulary and grammar review.
+Discord bot and parser pipeline for exporting Japanese study notes from Discord, structuring them, and generating NotebookLM-ready materials.
+
+## Screenshots
+
+Add screenshots here after you capture your setup:
+
+- `docs/images/discord-export-command.png`
+- `docs/images/normalized-json-preview.png`
+- `docs/images/notebooklm-files.png`
+
+Example Markdown:
+
+```md
+![Discord export command](docs/images/discord-export-command.png)
+![Normalized JSON preview](docs/images/normalized-json-preview.png)
+![NotebookLM files](docs/images/notebooklm-files.png)
+```
+
+## Quick Start
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+python bot/private_reader_bot.py
+```
+
+Inside Discord, run:
+
+- `/export_here`
+- `/export_status`
+
+Then process the exported file:
+
+```powershell
+python parser/normalize.py --input data/raw/exports/your_export.json --output data/normalized/normalized_entries.json
+python parser/build_notebooklm_files.py --input data/normalized/normalized_entries.json --output-dir data/notebooklm
+```
 
 ## English
 
@@ -9,6 +47,7 @@ Discord channel export bot and study-note pipeline for Japanese vocabulary and g
 This project helps you:
 
 - export messages from a Discord channel with a bot
+- keep incremental checkpoints for each channel
 - normalize Japanese learning notes into structured entries
 - generate Markdown files for NotebookLM
 - prepare data for future review apps or flashcards
@@ -17,11 +56,12 @@ This project helps you:
 
 - private channel export with slash commands
 - incremental export with per-channel checkpoints
-- raw JSON export for archive safety
-- parser for vocabulary and grammar notes
+- full re-export when needed
+- raw JSON archive output
+- starter parser for vocabulary and grammar notes
 - NotebookLM-friendly Markdown generation
 
-### Commands
+### Slash Commands
 
 - `/export_here`
   Export only new messages since the last checkpoint
@@ -34,17 +74,7 @@ This project helps you:
 - `/whoami`
   Show your Discord user ID
 
-### Setup
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-python bot/private_reader_bot.py
-```
-
-### Required Discord settings
+### Required Discord Settings
 
 - Bot permissions:
   - `View Channel`
@@ -53,13 +83,6 @@ python bot/private_reader_bot.py
   - `Use Application Commands`
 - Developer Portal:
   - enable `Message Content Intent`
-
-### Pipeline
-
-```powershell
-python parser/normalize.py --input data/raw/exports/your_export.json --output data/normalized/normalized_entries.json
-python parser/build_notebooklm_files.py --input data/normalized/normalized_entries.json --output-dir data/notebooklm
-```
 
 ## 中文
 
@@ -70,40 +93,32 @@ python parser/build_notebooklm_files.py --input data/normalized/normalized_entri
 你可以用它：
 
 - 用 bot 匯出 Discord 頻道訊息
+- 記住每個頻道的上次匯出位置，做增量匯出
 - 把原始訊息轉成結構化學習條目
 - 產生適合餵給 NotebookLM 的 Markdown
 - 為之後的複習軟體或單字卡做準備
 
-### 目前功能
+### 主要功能
 
 - 私人頻道 slash command 匯出
-- 記住每個頻道上次匯出位置的增量匯出
+- 頻道級 checkpoint 增量匯出
+- 可重新完整匯出
 - 保留原始 JSON 匯出檔
-- 初步解析單字與文法筆記
-- 生成 NotebookLM 可讀的 Markdown
+- 基礎單字與文法解析
+- 生成 NotebookLM 可讀 Markdown
 
-### 指令
+### Slash Commands
 
 - `/export_here`
   只匯出上次之後新增的訊息
 - `/export_here full_export:true`
-  忽略進度，重新完整匯出
+  忽略 checkpoint，重新完整匯出
 - `/export_status`
   查看目前頻道的匯出記錄點
 - `/export_reset_here`
   清除目前頻道的匯出記錄點
 - `/whoami`
   顯示你的 Discord 使用者 ID
-
-### 基本安裝
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-python bot/private_reader_bot.py
-```
 
 ### Discord 端需求
 
@@ -115,13 +130,6 @@ python bot/private_reader_bot.py
 - Developer Portal：
   - 開啟 `Message Content Intent`
 
-### 資料流程
-
-```powershell
-python parser/normalize.py --input data/raw/exports/你的匯出檔.json --output data/normalized/normalized_entries.json
-python parser/build_notebooklm_files.py --input data/normalized/normalized_entries.json --output-dir data/notebooklm
-```
-
 ## 日本語
 
 ### 概要
@@ -131,6 +139,7 @@ python parser/build_notebooklm_files.py --input data/normalized/normalized_entri
 できること：
 
 - Bot で Discord チャンネルをエクスポートする
+- チャンネルごとの前回位置を記録して増分エクスポートする
 - 生のメッセージを学習用エントリに正規化する
 - NotebookLM に入れやすい Markdown を生成する
 - 今後の復習アプリや単語カードの元データを作る
@@ -138,12 +147,13 @@ python parser/build_notebooklm_files.py --input data/normalized/normalized_entri
 ### 主な機能
 
 - プライベートチャンネル向け slash command エクスポート
-- チャンネルごとのチェックポイントを使った増分エクスポート
+- チャンネルごとのチェックポイントによる増分エクスポート
+- 必要に応じた全件再エクスポート
 - 生 JSON の保存
-- 単語と文法メモの基本的な解析
+- 単語と文法メモの基本解析
 - NotebookLM 向け Markdown 生成
 
-### コマンド
+### Slash Commands
 
 - `/export_here`
   前回以降の新しいメッセージだけをエクスポート
@@ -156,16 +166,6 @@ python parser/build_notebooklm_files.py --input data/normalized/normalized_entri
 - `/whoami`
   自分の Discord ユーザー ID を表示
 
-### セットアップ
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-python bot/private_reader_bot.py
-```
-
 ### Discord 側の設定
 
 - Bot 権限:
@@ -175,13 +175,6 @@ python bot/private_reader_bot.py
   - `Use Application Commands`
 - Developer Portal:
   - `Message Content Intent` を有効化
-
-### 処理の流れ
-
-```powershell
-python parser/normalize.py --input data/raw/exports/export.json --output data/normalized/normalized_entries.json
-python parser/build_notebooklm_files.py --input data/normalized/normalized_entries.json --output-dir data/notebooklm
-```
 
 ## Project Structure
 
@@ -197,3 +190,36 @@ data/
   normalized/
   notebooklm/
 ```
+
+## Output Files
+
+- `data/raw/exports/`
+  Raw Discord channel exports
+- `data/raw/export_state.json`
+  Incremental export checkpoints
+- `data/normalized/normalized_entries.json`
+  Structured study entries
+- `data/notebooklm/`
+  Markdown files ready for NotebookLM
+
+## Roadmap
+
+- Improve grammar detection and extraction quality
+- Split mixed long-form messages into multiple study entries
+- Add automatic pipeline command after export
+- Export directly to flashcard-friendly formats such as CSV
+- Add a lightweight review UI for spaced repetition
+- Add test coverage for parser rules
+
+## Suggested GitHub Topics
+
+- `discord`
+- `discord-bot`
+- `python`
+- `japanese`
+- `language-learning`
+- `notebooklm`
+- `study-tools`
+- `text-processing`
+- `flashcards`
+- `automation`
