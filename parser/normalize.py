@@ -12,21 +12,24 @@ SEPARATOR_RE = re.compile(r"^[ー—\-_=]{5,}$")
 URL_ONLY_RE = re.compile(r"^(https?://\S+)$", re.IGNORECASE)
 DISCORD_EMOJI_RE = re.compile(r"^<a?:[A-Za-z0-9_]+:\d+>$")
 MARKDOWN_EMOJI_LINK_RE = re.compile(r"^\[[^\]]+\]\(https?://[^\)]+\)$", re.IGNORECASE)
-EXAMPLE_RE = re.compile(r"^(?:例|例文|例句|用例)\s*[:：]?\s*(.+)$")
+EXAMPLE_RE = re.compile(r"^(?:例文|例句|例|用例|example)\s*[:：]?\s*(.+)$", re.IGNORECASE)
 READING_INLINE_RE = re.compile(r"^(?P<term>.+?)[（(](?P<reading>[^)）]+)[)）]$")
-READING_LABEL_RE = re.compile(r"^(?:読み|よみ|reading)\s*[:：]?\s*(.+)$", re.IGNORECASE)
-MEANING_LABEL_RE = re.compile(r"^(?:意味|意思|meaning)\s*[:：]?\s*(.+)$", re.IGNORECASE)
+READING_LABEL_RE = re.compile(r"^(?:読み|よみ|讀音|读音|reading)\s*[:：]?\s*(.+)$", re.IGNORECASE)
+MEANING_LABEL_RE = re.compile(r"^(?:意味|意思|解釋|解释|meaning)\s*[:：]?\s*(.+)$", re.IGNORECASE)
 GRAMMAR_LABEL_RE = re.compile(r"^(?:文法|grammar)\s*[:：]?\s*(.+)$", re.IGNORECASE)
+WORD_LABEL_RE = re.compile(r"^(?:單字|单字|単語|词汇|詞彙|vocab|word)\s*[:：]?\s*(.+)$", re.IGNORECASE)
+USAGE_LABEL_RE = re.compile(r"^(?:接續|接続|接续|用法|usage)\s*[:：]?\s*(.+)$", re.IGNORECASE)
 NUMBERED_LINE_RE = re.compile(r"^[0-9０-９]+[\.．、]\s*(.+)$")
 LEADING_MARK_RE = re.compile(r"^[・•●▪◦]\s*")
 CORRECTION_RE = re.compile(r"[→⇒]")
+GRAMMAR_PATTERN_RE = re.compile(r"(?:^|[\s　])(?:〜|~).+")
 
-GRAMMAR_HINTS = ("〜", "~", "文法", "grammar", "接続", "接續", "活用", "辞書形", "ない形")
 NOISE_PREFIXES = ("http://", "https://", "discord.com/oauth2/authorize")
 SKIP_EXACT_TEXT = {
     "勉強になります🫡",
     "ﾒﾓﾒﾓ φ(´・ω・｀)なるほどなるほど、、！！",
 }
+GRAMMAR_USAGE_HINTS = ("接續", "接続", "接续", "辞書形", "辞書型", "ない形", "活用", "文型")
 
 
 def parse_args() -> argparse.Namespace:
@@ -81,39 +84,6 @@ def split_lines(text: str) -> list[str]:
     return [line.strip() for line in text.splitlines() if line.strip()]
 
 
-def looks_like_example(line: str) -> bool:
-    return bool(EXAMPLE_RE.match(line))
-
-
-def extract_example(line: str) -> str:
-    match = EXAMPLE_RE.match(line)
-    return match.group(1).strip() if match else line.strip()
-
-
-def extract_reading_from_term(term: str) -> tuple[str, str | None]:
-    match = READING_INLINE_RE.match(term)
-    if not match:
-        return term.strip(), None
-    reading = match.group("reading").strip()
-    if reading.startswith("読み"):
-        reading = reading.replace("読み", "", 1).strip()
-    return match.group("term").strip(), reading or None
-
-
-def looks_like_grammar(text: str, lines: list[str]) -> bool:
-    if not lines:
-        return False
-    first = lines[0]
-    if GRAMMAR_LABEL_RE.match(first):
-        return True
-    if any(hint in text for hint in GRAMMAR_HINTS):
-        if any(label in text for label in ("意味", "意思", "接続", "接續", "辞書形", "ない形")):
-            return True
-        if "〜" in first or "~" in first:
-            return True
-    return False
-
-
 def parse_line_pair(line: str) -> tuple[str | None, str | None]:
     if "：" in line:
         left, right = line.split("：", 1)
@@ -124,13 +94,62 @@ def parse_line_pair(line: str) -> tuple[str | None, str | None]:
     return None, None
 
 
+def looks_like_example(line: str) -> bool:
+    return bool(EXAMPLE_RE.match(line))
+
+
+def extract_example(line: str) -> str:
+    match = EXAMPLE_RE.match(line)
+    return match.group(1).strip() if match else line.strip()
+
+
 def normalize_bullets(line: str) -> str:
     return LEADING_MARK_RE.sub("", line).strip()
 
 
-def extract_vocab(lines: list[str], raw_text: str) -> dict[str, Any]:
+def extract_reading_from_term(term: str) -> tuple[str, str | None]:
+    match = READING_INLINE_RE.match(term)
+    if not match:
+        return term.strip(), None
+    reading = match.group("reading").strip()
+    for prefix in ("読み", "よみ", "讀音", "读音"):
+        if reading.startswith(prefix):
+            reading = reading.replace(prefix, "", 1).strip()
+            break
+    return match.group("term").strip(), reading or None
+
+
+def strip_known_label(line: str) -> str:
+    for pattern in (WORD_LABEL_RE, GRAMMAR_LABEL_RE):
+        match = pattern.match(line)
+        if match:
+            return match.group(1).strip()
+    return line.strip()
+
+
+def looks_like_grammar(lines: list[str], raw_text: str) -> bool:
+    if not lines:
+        return False
+
+    first = lines[0]
+    if GRAMMAR_LABEL_RE.match(first):
+        return True
+
+    if any(USAGE_LABEL_RE.match(line) for line in lines[1:]):
+        return True
+
+    if any(MEANING_LABEL_RE.match(line) for line in lines[1:]) and GRAMMAR_PATTERN_RE.search(first):
+        return True
+
+    if GRAMMAR_PATTERN_RE.search(first) and any(hint in raw_text for hint in GRAMMAR_USAGE_HINTS):
+        return True
+
+    return False
+
+
+def extract_vocab(lines: list[str]) -> dict[str, Any]:
     if len(lines) == 1:
-        line = lines[0]
+        line = strip_known_label(lines[0])
         left, right = parse_line_pair(line)
         if left and right and left not in {"例", "例文", "例句"}:
             jp, reading = extract_reading_from_term(left)
@@ -149,17 +168,10 @@ def extract_vocab(lines: list[str], raw_text: str) -> dict[str, Any]:
             "example_jp": None,
         }
 
-    term_line = lines[0]
+    term_line = strip_known_label(lines[0])
+    jp, reading = extract_reading_from_term(term_line)
     meaning_lines: list[str] = []
     example_lines: list[str] = []
-    reading: str | None = None
-
-    labeled_term = GRAMMAR_LABEL_RE.match(term_line)
-    if labeled_term:
-        term_line = labeled_term.group(1).strip()
-
-    jp, inline_reading = extract_reading_from_term(term_line)
-    reading = inline_reading
 
     for line in lines[1:]:
         reading_match = READING_LABEL_RE.match(line)
@@ -186,18 +198,11 @@ def extract_vocab(lines: list[str], raw_text: str) -> dict[str, Any]:
             continue
 
         bullet_line = normalize_bullets(line)
-        if bullet_line != line and jp not in {"", None}:
+        if bullet_line != line:
             example_lines.append(bullet_line)
             continue
 
         meaning_lines.append(line)
-
-    if not reading:
-        for line in lines[1:]:
-            nested_term, nested_reading = extract_reading_from_term(line)
-            if nested_reading and nested_term == line.split("（", 1)[0].split("(", 1)[0].strip():
-                reading = nested_reading
-                break
 
     return {
         "jp": jp or term_line,
@@ -207,39 +212,50 @@ def extract_vocab(lines: list[str], raw_text: str) -> dict[str, Any]:
     }
 
 
-def extract_grammar(lines: list[str], raw_text: str) -> dict[str, Any]:
-    pattern: str | None = None
+def extract_grammar(lines: list[str]) -> dict[str, Any]:
+    first = lines[0]
+    pattern_match = GRAMMAR_LABEL_RE.match(first)
+    if pattern_match:
+        pattern = pattern_match.group(1).strip()
+    else:
+        left, right = parse_line_pair(first)
+        if left and right and GRAMMAR_PATTERN_RE.search(left):
+            pattern = left
+            lines = [first, f"意味：{right}", *lines[1:]]
+        else:
+            pattern = strip_known_label(first)
+
     meaning_lines: list[str] = []
     example_lines: list[str] = []
     usage_lines: list[str] = []
-
-    first = lines[0]
-    match = GRAMMAR_LABEL_RE.match(first)
-    if match:
-        pattern = match.group(1).strip()
-    else:
-        left, right = parse_line_pair(first)
-        if left and right and ("〜" in left or "~" in left):
-            pattern = left
-            meaning_lines.append(right)
-        else:
-            pattern = first
 
     for line in lines[1:]:
         meaning_match = MEANING_LABEL_RE.match(line)
         if meaning_match:
             meaning_lines.append(meaning_match.group(1).strip())
             continue
+
+        usage_match = USAGE_LABEL_RE.match(line)
+        if usage_match:
+            usage_lines.append(usage_match.group(1).strip())
+            continue
+
         if looks_like_example(line):
             example_lines.append(extract_example(line))
             continue
-        if any(key in line for key in ("接続", "接續", "辞書形", "ない形")):
-            usage_lines.append(normalize_bullets(line))
-            continue
+
         bullet_line = normalize_bullets(line)
         if bullet_line != line:
-            example_lines.append(bullet_line)
+            if any(hint in bullet_line for hint in GRAMMAR_USAGE_HINTS):
+                usage_lines.append(bullet_line)
+            else:
+                example_lines.append(bullet_line)
             continue
+
+        if any(hint in line for hint in GRAMMAR_USAGE_HINTS):
+            usage_lines.append(line)
+            continue
+
         meaning_lines.append(line)
 
     return {
@@ -251,7 +267,7 @@ def extract_grammar(lines: list[str], raw_text: str) -> dict[str, Any]:
 
 
 def detect_kind(lines: list[str], raw_text: str) -> str:
-    if looks_like_grammar(raw_text, lines):
+    if looks_like_grammar(lines, raw_text):
         return "grammar"
     return "vocab"
 
@@ -277,9 +293,9 @@ def normalize_message(message: dict[str, Any]) -> list[dict[str, Any]]:
     }
 
     if kind == "grammar":
-        entry.update(extract_grammar(lines, raw_text))
+        entry.update(extract_grammar(lines))
     else:
-        entry.update(extract_vocab(lines, raw_text))
+        entry.update(extract_vocab(lines))
 
     return [entry]
 
