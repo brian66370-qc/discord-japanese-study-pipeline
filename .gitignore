@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+data/raw/exports/
+data/raw/export_state.json
+data/raw/raw_messages.json
+data/normalized/normalized_entries.json
+data/notebooklm/*.md
+!.gitkeep
